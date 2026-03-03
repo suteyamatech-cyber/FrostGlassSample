@@ -12,10 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Unzip project
-        run: |
-          unzip FrostGlassSample.zip
-          cd FrostGlassSample
-          ls
+        run: unzip -o FrostGlassSample.zip
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -23,18 +20,26 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Grant execute permission
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # ★ wrapper jar が無いので Actions 側で生成する
+      - name: Generate Gradle Wrapper
         run: |
           cd FrostGlassSample
-          chmod +x gradlew
+          gradle wrapper --gradle-version 8.7
 
       - name: Build Debug APK
         run: |
           cd FrostGlassSample
-          ./gradlew assembleDebug
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: FrostGlassSample/app/build/outputs/apk/debug/app-debug.apk        uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: FrostGlassSample/app/build/outputs/apk/debug/app-debug.apk
