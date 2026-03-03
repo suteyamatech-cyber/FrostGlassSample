@@ -17,7 +17,7 @@ jobs:
         run: |
           set -eux
           ls -la
-          unzip -o FrostGlassSample.zip
+          unzip -o FrostGlassSample_FIXED.zip
           echo "== find settings.gradle.kts =="
           find . -maxdepth 10 -type f -name "settings.gradle.kts" -print || true
           echo "== find app/build.gradle.kts =="
