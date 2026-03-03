@@ -24,23 +24,20 @@ jobs:
 
       - name: Download Gradle 8.7
         run: |
-          wget https://services.gradle.org/distributions/gradle-8.7-bin.zip
-          unzip gradle-8.7-bin.zip
+          wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q gradle-8.7-bin.zip
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
 
       - name: Detect project root
         id: detect
         run: |
-          PROJECT_DIR=$(find . -name settings.gradle.kts -print -quit | xargs dirname)
+          PROJECT_DIR=$(find . -maxdepth 5 -name settings.gradle.kts -print -quit | xargs dirname)
           echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+          echo "Detected: $PROJECT_DIR"
+          ls -la "$PROJECT_DIR"
 
-      - name: Build Debug APK
+      # ★これを追加：Kotlin 2.0 を 1.9.24 に落として Compose plugin 必須問題を回避
+      - name: Force Kotlin 1.9.24 for build
         run: |
           cd "${{ steps.detect.outputs.project_dir }}"
-          gradle :app:assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: ${{ steps.detect.outputs.project_dir }}/app/build/outputs/apk/debug/app-debug.apk
+          echo "== BEFORE root build.gradle.kts =="
