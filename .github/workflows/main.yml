@@ -41,7 +41,6 @@ jobs:
         id: detect
         run: |
           set -eux
-          # settings.gradle.kts があるディレクトリ = Gradleプロジェクトルート
           PROJECT_DIR="$(find . -maxdepth 10 -type f -name settings.gradle.kts -print -quit | xargs -I{} dirname "{}")"
           if [ -z "${PROJECT_DIR}" ]; then
             echo "ERROR: settings.gradle.kts not found"
@@ -63,11 +62,30 @@ jobs:
           # Kotlin plugin version を 1.9.24 に（2.0.x / 2.1.x をまとめて落とす）
           sed -i 's/id("org.jetbrains.kotlin.android") version "2\.[0-9]\+\.[0-9]\+"/id("org.jetbrains.kotlin.android") version "1.9.24"/' build.gradle.kts || true
 
-          # Compose compiler extension も 1.9系に合わせる（書いてあれば置換）
+          # Compose compiler extension を Kotlin 1.9 系に合わせる（書いてあれば置換）
           sed -i 's/kotlinCompilerExtensionVersion = "1\.5\.[0-9]\+"/kotlinCompilerExtensionVersion = "1.5.14"/' app/build.gradle.kts || true
 
           echo "== AFTER root build.gradle.kts =="
           sed -n '1,120p' build.gradle.kts || true
+
+      # Java(1.8) と Kotlin(17) のターゲット不一致を直す：両方17に揃える
+      - name: Align JVM target to 17
+        run: |
+          set -eux
+          cd "${{ steps.detect.outputs.project_dir }}"
+
+          echo "== BEFORE app/build.gradle.kts (snippet) =="
+          sed -n '1,220p' app/build.gradle.kts || true
+
+          # compileOptions がある場合は 1.8 -> 17 に置換
+          sed -i 's/JavaVersion\.VERSION_1_8/JavaVersion.VERSION_17/g' app/build.gradle.kts || true
+
+          # kotlinOptions jvmTarget がある場合は 1.8 -> 17 に置換
+          sed -i 's/jvmTarget = "1\.8"/jvmTarget = "17"/g' app/build.gradle.kts || true
+          sed -i 's/jvmTarget = "8"/jvmTarget = "17"/g' app/build.gradle.kts || true
+
+          echo "== AFTER app/build.gradle.kts (snippet) =="
+          sed -n '1,260p' app/build.gradle.kts || true
 
       - name: Build Debug APK
         run: |
