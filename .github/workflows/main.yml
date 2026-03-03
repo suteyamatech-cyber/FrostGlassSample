@@ -4,18 +4,26 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Unzip project
-        run: unzip -o FrostGlassSample.zip
+        run: |
+          ls -la
+          unzip -o FrostGlassSample.zip
+          echo "== after unzip =="
+          ls -la
+          echo "== FrostGlassSample dir =="
+          ls -la FrostGlassSample
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,7 +32,38 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Generate Wrapper
+      # gradle wrapper jar が zip に入っていない前提なので生成する
+      - name: Generate Gradle Wrapper
         run: |
           cd FrostGlassSample
           gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
+
+      # Kotlin 2.0 だと Compose Compiler plugin が必須で落ちるため、ビルド時だけ 1.9 系に上書き
+      - name: Force Kotlin 1.9.x (avoid compose plugin requirement)
+        run: |
+          cd FrostGlassSample
+          echo "== before patch (root build.gradle.kts) =="
+          sed -n '1,120p' build.gradle.kts || true
+
+          # root build.gradle.kts の Kotlin plugin version を 1.9.24 に置換（見つからなければ何もしない）
+          sed -i 's/id("org.jetbrains.kotlin.android") version "2.0.20"/id("org.jetbrains.kotlin.android") version "1.9.24"/' build.gradle.kts || true
+          sed -i 's/id("org.jetbrains.kotlin.android") version "2.0.21"/id("org.jetbrains.kotlin.android") version "1.9.24"/' build.gradle.kts || true
+
+          # compose compiler extension も 1.9.x 向けに
+          sed -i 's/kotlinCompilerExtensionVersion = "1.5.15"/kotlinCompilerExtensionVersion = "1.5.14"/' app/build.gradle.kts || true
+          sed -i 's/kotlinCompilerExtensionVersion = "1.5.16"/kotlinCompilerExtensionVersion = "1.5.14"/' app/build.gradle.kts || true
+
+          echo "== after patch (root build.gradle.kts) =="
+          sed -n '1,120p' build.gradle.kts || true
+
+      - name: Build Debug APK
+        run: |
+          cd FrostGlassSample
+          ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: FrostGlassSample/app/build/outputs/apk/debug/app-debug.apk
