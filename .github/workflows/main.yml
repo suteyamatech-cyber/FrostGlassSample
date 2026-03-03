@@ -2,7 +2,8 @@ name: Build APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -14,32 +15,16 @@ jobs:
       - name: Unzip project
         run: unzip -o FrostGlassSample.zip
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # ★ wrapper jar が無いので Actions 側で生成する
-      - name: Generate Gradle Wrapper
+      - name: Generate Wrapper
         run: |
           cd FrostGlassSample
           gradle wrapper --gradle-version 8.7
-
-      - name: Build Debug APK
-        run: |
-          cd FrostGlassSample
-          chmod +x gradlew
-          ./gradlew :app:assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: FrostGlassSample/app/build/outputs/apk/debug/app-debug.apk        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: FrostGlassSample/app/build/outputs/apk/debug/app-debug.apk
