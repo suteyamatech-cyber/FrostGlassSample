@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Neon-blue car / nav icon for NovaDrive launcher foreground -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer neon-blue glow ring -->
+    <path
+        android:fillColor="#2200D4FF"
+        android:pathData="M54,18 a36,36 0 1,0 0.01,0Z" />
+
+    <!-- Navigation arrow / car symbol -->
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M54,26 L68,72 L54,64 L40,72 Z" />
+
+    <!-- Centre dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,52 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0Z" />
+</vector>

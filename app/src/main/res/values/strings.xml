@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">NovaDrive</string>
+    <string name="ai_greeting">AI Navigator ready. Route loaded.</string>
+    <string name="speed_unit">km/h</string>
+    <string name="eta_label">ETA</string>
+    <string name="distance_label">Distance</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="demo_mode">DEMO MODE</string>
+</resources>
